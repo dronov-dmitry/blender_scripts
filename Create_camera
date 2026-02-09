@@ -1,0 +1,30 @@
+import bpy
+
+# --- НАСТРОЙКИ КАМЕРЫ ---
+FOCAL_LENGTH = 24
+
+scene = bpy.context.scene
+
+# 1. СОЗДАНИЕ КАМЕРЫ (если нет)
+if not scene.camera:
+    bpy.ops.object.camera_add()
+    scene.camera = bpy.context.active_object
+
+scene.camera.data.lens = FOCAL_LENGTH
+
+# 2. ПРИВЯЗКА К ТЕКУЩЕМУ ВИДУ
+view3d_area = next((a for a in bpy.context.screen.areas if a.type == 'VIEW_3D'), None)
+
+if view3d_area:
+    override = bpy.context.copy()
+    override['area'] = view3d_area
+    override['region'] = view3d_area.regions[-1]
+    
+    try:
+        bpy.ops.view3d.camera_to_view(override)
+        view3d_area.spaces[0].region_3d.view_perspective = 'CAMERA'
+        print("Камера успешно установлена на ракурс!")
+    except Exception as e:
+        print(f"Ошибка привязки: {e}")
+else:
+    print("Ошибка: Окно 3D View не найдено!")
