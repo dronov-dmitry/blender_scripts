@@ -1,0 +1,34 @@
+import bpy
+
+# Путь к твоему файлу (обязательно через двойные слеши или прямые)
+# https://polyhaven.com/a/pretoria_gardens
+hdr_path = "C:/Users/DmitryD/Desktop/pretoria_gardens_4k.exr"
+
+# 1. Настройка мира
+scene = bpy.context.scene
+scene.world.use_nodes = True
+nodes = scene.world.node_tree.nodes
+links = scene.world.node_tree.links
+
+# Очищаем старые ноды
+nodes.clear()
+
+# 2. Создаем ноды для освещения
+node_world = nodes.new(type='ShaderNodeOutputWorld')
+node_bg = nodes.new(type='ShaderNodeBackground')
+node_env = nodes.new(type='ShaderNodeTexEnvironment')
+
+# Загружаем твой файл
+try:
+    node_env.image = bpy.data.images.load(hdr_path)
+except:
+    print("Ошибка: файл не найден по указанному пути!")
+
+# 3. Соединяем их
+links.new(node_env.outputs['Color'], node_bg.inputs['Color'])
+links.new(node_bg.outputs['Background'], node_world.inputs['Surface'])
+
+# 4. Яркость (можешь менять это число, если слишком темно или светло)
+node_bg.inputs[1].default_value = 1.0 
+
+print("HDRI успешно подключена!")
