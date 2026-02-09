@@ -1,0 +1,56 @@
+import bpy
+
+# --- 1. ПОЛУЧЕНИЕ СПИСКА И ОТЧЕТ ---
+print("--- ОБНАРУЖЕННЫЕ МАТЕРИАЛЫ ---")
+log_name = "Material_Final_Log"
+report = bpy.data.texts.new(log_name) if log_name not in bpy.data.texts else bpy.data.texts[log_name]
+report.clear()
+report.write("Список материалов в сцене:\n")
+
+for mat in bpy.data.materials:
+    report.write(f"- {mat.name}\n")
+    print(mat.name)
+
+# --- 2. ГЛОБАЛЬНАЯ НАСТРОЙКА ---
+def apply_settings():
+    for mat in bpy.data.materials:
+        if not mat.use_nodes:
+            mat.use_nodes = True
+        
+        nodes = mat.node_tree.nodes
+        bsdf = nodes.get("Principled BSDF")
+        if not bsdf: continue
+        
+        n = mat.name.lower()
+        
+        # СТЕКЛО (Прозрачность + Отражения)
+        if any(x in n for x in ["glass", "стекло", "glaz", "прозрач"]):
+            bsdf.inputs['Base Color'].default_value = (0.8, 0.9, 1.0, 1.0)
+            bsdf.inputs['Roughness'].default_value = 0.0
+            bsdf.inputs['Transmission'].default_value = 1.0
+            mat.blend_method = 'BLEND'
+            mat.use_screen_refraction = True
+            report.write(f">>> {mat.name} настроен как СТЕКЛО\n")
+
+        # МЕТАЛЛ (Алюминий/Сталь)
+        elif any(x in n for x in ["metal", "alum", "сталь", "метал", "iron"]):
+            bsdf.inputs['Base Color'].default_value = (0.7, 0.7, 0.7, 1.0)
+            bsdf.inputs['Metallic'].default_value = 1.0
+            bsdf.inputs['Roughness'].default_value = 0.2
+            report.write(f">>> {mat.name} настроен как МЕТАЛЛ\n")
+
+        # БЕТОН / КАМЕНЬ / СТЕНЫ
+        elif any(x in n for x in ["concr", "wall", "бетон", "стена", "stone", "brick"]):
+            bsdf.inputs['Base Color'].default_value = (0.4, 0.4, 0.4, 1.0)
+            bsdf.inputs['Roughness'].default_value = 0.8
+            bsdf.inputs['Metallic'].default_value = 0.0
+            report.write(f">>> {mat.name} настроен как БЕТОН/СТЕНА\n")
+
+apply_settings()
+
+# Переключаем окно на отчет, чтобы ты увидел результат
+for area in bpy.context.screen.areas:
+    if area.type == 'TEXT_EDITOR':
+        area.spaces.active.text = report
+
+print("Список получен, материалы настроены!")
