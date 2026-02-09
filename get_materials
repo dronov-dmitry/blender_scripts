@@ -2,7 +2,7 @@ import bpy
 
 # --- 1. ПОЛУЧЕНИЕ СПИСКА И ОТЧЕТ ---
 print("--- ОБНАРУЖЕННЫЕ МАТЕРИАЛЫ ---")
-log_name = "Material_Final_Log"
+log_name = "material_Final_Log"
 report = bpy.data.texts.new(log_name) if log_name not in bpy.data.texts else bpy.data.texts[log_name]
 report.clear()
 report.write("Список материалов в сцене:\n")
