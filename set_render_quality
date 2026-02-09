@@ -1,0 +1,36 @@
+import bpy
+
+# --- НАСТРОЙКИ КАЧЕСТВА ---
+QUALITY = "HIGH"  # FAST / HIGH
+ENGINE = "EEVEE"  # EEVEE / CYCLES
+WIDTH = 1080
+HEIGHT = 1920
+
+scene = bpy.context.scene
+
+# 1. ДВИЖАТЕЛЬ И РАЗРЕШЕНИЕ
+scene.render.engine = 'BLENDER_EEVEE' if ENGINE == "EEVEE" else 'CYCLES'
+scene.render.resolution_x = WIDTH
+scene.render.resolution_y = HEIGHT
+
+# 2. ДЕТАЛЬНЫЕ НАСТРОЙКИ
+if ENGINE == "EEVEE":
+    eevee = scene.eevee
+    if QUALITY == "FAST":
+        scene.render.resolution_percentage = 50
+        eevee.use_gtao = False
+        eevee.use_ssr = False
+        eevee.shadow_cascade_size = '512'
+        print("Режим: EEVEE БЫСТРЫЙ (50% разрешения)")
+    else:
+        scene.render.resolution_percentage = 100
+        eevee.use_gtao = True
+        eevee.use_ssr = True
+        eevee.use_ssr_refraction = True
+        eevee.shadow_cascade_size = '2048'
+        print("Режим: EEVEE ВЫСОКОЕ КАЧЕСТВО")
+
+# Включаем режим отображения рендера во вьюпорте
+for area in bpy.context.screen.areas:
+    if area.type == 'VIEW_3D':
+        area.spaces[0].shading.type = 'RENDERED'
