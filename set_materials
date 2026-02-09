@@ -1,0 +1,62 @@
+import bpy
+
+def setup_all_materials():
+    print("--- ЗАПУСК ГЛОБАЛЬНОЙ ПЕРЕНАСТРОЙКИ ---")
+    
+    for mat in bpy.data.materials:
+        if not mat.use_nodes:
+            mat.use_nodes = True
+        
+        nodes = mat.node_tree.nodes
+        bsdf = nodes.get("Principled BSDF")
+        if not bsdf: continue
+        
+        n = mat.name.lower()
+        
+        # 1. СТЕКЛО (Glass, Steklo, Зеркало, Mirror)
+        if any(x in n for x in ["стекло", "glass", "steklo", "зеркало", "mirror", "transparent"]):
+            
+            # ПРОВЕРКА НА ТЕМНО-СИНЕЕ СТЕКЛО
+            if "синий" in n or "blue" in n:
+                # Глубокий темно-синий цвет
+                bsdf.inputs['Base Color'].default_value = (0.01, 0.05, 0.2, 1.0)
+                print(f">>> {mat.name} -> ТЕМНО-СИНЕЕ СТЕКЛО")
+            else:
+                # Обычное светлое стекло
+                bsdf.inputs['Base Color'].default_value = (0.8, 0.9, 1.0, 1.0)
+                print(f">>> {mat.name} -> СВЕТЛОЕ СТЕКЛО")
+
+            bsdf.inputs['Transmission'].default_value = 1.0
+            bsdf.inputs['Roughness'].default_value = 0.0
+            
+            if "зеркало" in n or "mirror" in n:
+                bsdf.inputs['Transmission'].default_value = 0.0
+                bsdf.inputs['Metallic'].default_value = 1.0
+            
+            mat.blend_method = 'BLEND'
+            mat.use_screen_refraction = True
+
+        # 2. МЕТАЛЛ
+        elif any(x in n for x in ["метал", "metal", "сталь", "steel", "алюмин", "aluminum", "хром", "chrome", "pereplet", "stainless"]):
+            bsdf.inputs['Base Color'].default_value = (0.6, 0.6, 0.6, 1.0)
+            bsdf.inputs['Metallic'].default_value = 1.0
+            bsdf.inputs['Roughness'].default_value = 0.2
+            print(f">>> {mat.name} -> МЕТАЛЛ")
+
+        # 3. ДЕРЕВО
+        elif any(x in n for x in ["wood", "дерево", "фанера", "oak", "velvet", "02", "03"]):
+            bsdf.inputs['Base Color'].default_value = (0.15, 0.08, 0.04, 1.0)
+            bsdf.inputs['Roughness'].default_value = 0.8
+            bsdf.inputs['Metallic'].default_value = 0.0
+
+        # 4. КАМЕНЬ / БЕТОН
+        elif any(x in n for x in ["жб", "бетон", "concrete", "мрамор", "marble", "stone", "стена", "кирпич", "brick", "067"]):
+            bsdf.inputs['Base Color'].default_value = (0.4, 0.4, 0.4, 1.0)
+            bsdf.inputs['Roughness'].default_value = 0.7
+            
+        # 5. ПЛАСТИК / ЧЕРНЫЙ
+        elif any(x in n for x in ["plastic", "пластик", "черный", "black", "abs"]):
+            bsdf.inputs['Base Color'].default_value = (0.02, 0.02, 0.02, 1.0)
+            bsdf.inputs['Roughness'].default_value = 0.4
+
+setup_all_materials()
