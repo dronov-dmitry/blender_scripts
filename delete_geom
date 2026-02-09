@@ -1,0 +1,16 @@
+import bpy
+
+# Переключаемся в объектный режим, если вдруг были в режиме редактирования
+if bpy.ops.object.mode_set.poll():
+    bpy.ops.object.mode_set(mode='OBJECT')
+
+# Удаляем все объекты типа MESH (геометрию)
+for obj in bpy.data.objects:
+    if obj.type == 'MESH':
+        bpy.data.objects.remove(obj, do_unlink=True)
+
+# Очищаем кэш данных, чтобы Blender забыл про старые полигоны и файл стал легким
+for mesh in bpy.data.meshes:
+    bpy.data.meshes.remove(mesh)
+
+print("Вся геометрия полностью удалена. Сцена пуста.")
